@@ -70,7 +70,7 @@ export default function WelcomePage() {
       <div className="absolute top-24 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full bg-accent/[0.12] blur-[80px] pointer-events-none" />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center px-6 pt-16 pb-10 min-h-full">
+      <div className="relative z-10 flex flex-col items-center justify-center px-6 py-10 min-h-full">
         {/* App Icon */}
         <div className="mb-6">
           <img
@@ -89,7 +89,7 @@ export default function WelcomePage() {
         </p>
 
         {/* Feature Tiles */}
-        <div className="w-full max-w-md flex flex-col gap-3 mb-10">
+        <div className="w-full max-w-md flex flex-col gap-4 mb-10">
           <FeatureTile
             icon={<ScanIcon />}
             title="Scan your space"
@@ -106,7 +106,8 @@ export default function WelcomePage() {
             description="Drag, rotate, and scale your placed models"
           />
         </div>
-
+        {/* some height */}
+        <div className="h-10" />
         {/* CTA Button */}
         <button
           onClick={() => navigate('/session')}
