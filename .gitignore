@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Generated AR build output
+public/ar/
+ar-dist/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

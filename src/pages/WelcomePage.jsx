@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { QRCodeSVG } from 'qrcode.react';
 import { MODEL_CATALOG } from '../data/modelCatalog.js';
 import FeatureTile from '../components/FeatureTile.jsx';
 
@@ -51,6 +53,23 @@ function CameraIcon() {
 export default function WelcomePage() {
   const navigate = useNavigate();
   const modelCount = MODEL_CATALOG.length;
+  const [showQr, setShowQr] = useState(false);
+  const [customUrl, setCustomUrl] = useState('');
+
+  const getArUrl = () => {
+    if (customUrl.trim()) return customUrl.trim();
+    if (typeof window === 'undefined') return '/ar/index.html';
+    const { hostname, port, protocol } = window.location;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return '';
+    }
+    return `${protocol}//${hostname}${port ? ':' + port : ''}/ar/index.html`;
+  };
+
+  const arUrl = getArUrl();
+  const isLocalhost = typeof window !== 'undefined'
+    && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    && !customUrl.trim();
 
   return (
     <div className="h-full w-full overflow-y-auto bg-background relative">
@@ -67,7 +86,7 @@ export default function WelcomePage() {
       />
 
       {/* Radial glow */}
-      <div className="absolute top-24 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full bg-accent/[0.12] blur-[80px] pointer-events-none" />
+      <div className="absolute top-24 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full bg-accent/12 blur-[80px] pointer-events-none" />
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center px-6 py-10 min-h-full">
@@ -106,7 +125,6 @@ export default function WelcomePage() {
             description="Drag, rotate, and scale your placed models"
           />
         </div>
-        {/* some height */}
         <div className="h-10" />
         {/* CTA Button */}
         <button
@@ -117,12 +135,57 @@ export default function WelcomePage() {
           Launch AR Experience
         </button>
 
+        {/* QR Code toggle */}
+        <button
+          onClick={() => setShowQr(!showQr)}
+          className="mt-6 text-[13px] text-accent/80 underline underline-offset-4 cursor-pointer bg-transparent border-none"
+        >
+          {showQr ? 'Hide QR Code' : 'Scan QR to open AR on phone'}
+        </button>
+
+        {showQr && (
+          <div className="mt-4 flex flex-col items-center gap-3 p-5 rounded-2xl bg-surface/80 border border-white-12 backdrop-blur-sm w-full max-w-md">
+            {isLocalhost && (
+              <div className="w-full flex flex-col gap-2">
+                <p className="text-[12px] text-danger text-center">
+                  You're on localhost — enter your network URL for the QR code to work on phone
+                </p>
+                <input
+                  type="text"
+                  placeholder="e.g. https://192.168.1.5:5173/ar/index.html"
+                  value={customUrl}
+                  onChange={(e) => setCustomUrl(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg bg-background border border-white-24 text-white text-[13px] outline-none focus:border-accent"
+                />
+              </div>
+            )}
+            {arUrl ? (
+              <>
+                <QRCodeSVG
+                  value={arUrl}
+                  size={180}
+                  bgColor="transparent"
+                  fgColor="#00E5FF"
+                  level="M"
+                />
+                <p className="text-[11px] text-white-60 text-center max-w-[200px]">
+                  Scan with your phone camera to launch AR directly
+                </p>
+              </>
+            ) : (
+              <p className="text-[11px] text-white-60 text-center">
+                Enter a URL above to generate the QR code
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Footer notes */}
         <p className="mt-5 text-[12px] text-white-60 text-center">
-          Camera access is required for AR
+          Works on Chrome (Android) &amp; Safari (iOS)
         </p>
         <p className="mt-2 text-[11px] text-white-24 text-center max-w-xs">
-          Full AR works best on Chrome (Android). Other devices use 3D preview.
+          Powered by 8th Wall — no app install required
         </p>
       </div>
     </div>

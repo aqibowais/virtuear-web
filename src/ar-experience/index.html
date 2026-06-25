@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Virtuar – AR Experience</title>
+  <meta itemprop="name" content="Virtuar AR">
+  <meta name="twitter:title" content="Virtuar AR">
+  <meta property="og:title" content="Virtuar AR">
+  <meta property="og:site_name" content="Virtuar">
+  <meta name="description" content="Place 3D robots in your real world using augmented reality. Works on Chrome and Safari.">
+  <meta itemprop="description" content="Place 3D robots in your real world using augmented reality.">
+  <meta property="og:description" content="Place 3D robots in your real world using augmented reality. Works on Chrome and Safari.">
+  <meta name="twitter:description" content="Place 3D robots in your real world using augmented reality.">
+
+  <script crossorigin="anonymous" src="./external/runtime/runtime.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" async crossorigin="anonymous" data-preload-chunks="slam"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@8thwall/landing-page@1/dist/landing-page.js" crossorigin="anonymous"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #0A0E14;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    *::-webkit-scrollbar { display: none; }
+    * { scrollbar-width: none; }
+    button { -webkit-tap-highlight-color: transparent; }
+  </style>
+</head>
+
+<body>
+<script src="bundle.js"></script>
+</body>
+
+</html>
