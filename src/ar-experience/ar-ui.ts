@@ -40,7 +40,7 @@ function buildUI(world: any, groundEid: any) {
   backBtn.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>`
   backBtn.style.cssText = `
     width:44px; height:44px; border-radius:14px;
-    background:rgba(20,27,36,0.85); border:1px solid rgba(255,255,255,0.12);
+    background:rgba(18,22,30,0.85); border:1px solid rgba(255,255,255,0.08);
     display:flex; align-items:center; justify-content:center;
     cursor:pointer; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
   `
@@ -60,10 +60,10 @@ function buildUI(world: any, groundEid: any) {
 
   // Trash button
   trashBtn = document.createElement('button')
-  trashBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`
+  trashBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF4D6A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`
   trashBtn.style.cssText = `
     width:44px; height:44px; border-radius:14px;
-    background:rgba(255,77,106,0.85); border:1px solid rgba(255,255,255,0.12);
+    background:rgba(255,77,106,0.15); border:1px solid rgba(255,77,106,0.3);
     display:flex; align-items:center; justify-content:center;
     cursor:pointer; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
     opacity:0; pointer-events:none; transition: opacity 0.25s ease;
@@ -89,8 +89,8 @@ function buildUI(world: any, groundEid: any) {
   hintBadge.textContent = 'Tap a surface to place robot'
   hintBadge.style.cssText = `
     padding: 8px 20px; border-radius:12px;
-    background:rgba(0,229,255,0.15); border:1px solid rgba(0,229,255,0.3);
-    color:#00E5FF; font-size:14px; font-weight:500;
+    background:rgba(255,107,26,0.12); border:1px solid rgba(255,107,26,0.25);
+    color:#FF6B1A; font-size:14px; font-weight:500;
     backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
     transition: opacity 0.3s ease;
   `
@@ -151,8 +151,8 @@ function chipStyle(active: boolean): string {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     transition: all 0.2s ease; flex-shrink:0;
     ${active
-      ? 'background:#00E5FF; color:#0A0E14; box-shadow:0 0 16px rgba(0,229,255,0.4);'
-      : 'background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.8); border:1px solid rgba(255,255,255,0.12);'
+      ? 'background:#FF6B1A; color:#fff; box-shadow:0 0 16px rgba(255,107,26,0.4);'
+      : 'background:rgba(18,22,30,0.85); color:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.08);'
     }
   `
 }

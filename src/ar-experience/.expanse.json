@@ -137,7 +137,7 @@
         "width": 200,
         "height": 200,
         "text": "Loading Virtuar...",
-        "color": "#00E5FF",
+        "color": "#FF6B1A",
         "fontSize": 24,
         "type": "3d",
         "font": { "type": "font", "font": "Roboto" },
