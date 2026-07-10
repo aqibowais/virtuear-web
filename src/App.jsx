@@ -6,8 +6,18 @@ const ArSessionPage = lazy(() => import('./pages/ArSessionPage.jsx'));
 
 function LoadingFallback() {
   return (
-    <div className="h-full w-full flex items-center justify-center bg-background">
-      <div className="w-10 h-10 border-3 border-accent border-t-transparent rounded-full animate-spin" />
+    <div style={{
+      width: '100%', height: '100%',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      backgroundColor: '#07090F',
+    }}>
+      <div style={{
+        width: 44, height: 44,
+        border: '3px solid rgba(255,107,26,0.15)',
+        borderTopColor: '#FF6B1A',
+        borderRadius: '50%',
+        animation: 'spin 0.8s linear infinite',
+      }} />
     </div>
   );
 }

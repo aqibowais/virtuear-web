@@ -1,13 +1,56 @@
 import { useNavigate } from 'react-router-dom';
 
+const pageStyle = {
+  width: '100%', height: '100%',
+  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+  backgroundColor: '#07090F', padding: '0 1.5rem',
+  fontFamily: "'DM Sans', sans-serif",
+};
+
+const iconBox = {
+  width: 80, height: 80, borderRadius: 20,
+  backgroundColor: 'rgba(255,107,26,0.08)',
+  border: '1px solid rgba(255,107,26,0.18)',
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  marginBottom: 24,
+};
+
+const heading = {
+  fontSize: 22, fontWeight: 700, color: '#fff', margin: '0 0 8px',
+};
+
+const subtext = {
+  fontSize: 15, color: 'rgba(255,255,255,0.5)', textAlign: 'center',
+  maxWidth: 360, lineHeight: 1.6, marginBottom: 32,
+};
+
+const primaryBtn = {
+  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+  width: '100%', maxWidth: 320, padding: '0.85rem 1.5rem',
+  borderRadius: 9999, border: 'none', cursor: 'pointer',
+  fontSize: 15, fontWeight: 600,
+  backgroundColor: '#FF6B1A', color: '#fff',
+  boxShadow: '0 6px 24px rgba(255,107,26,0.3)',
+  marginBottom: 16,
+};
+
+const hint = {
+  fontSize: 12, color: 'rgba(255,255,255,0.45)', textAlign: 'center',
+  maxWidth: 320, lineHeight: 1.55, marginBottom: 24,
+};
+
+const backLink = {
+  fontSize: 13, color: 'rgba(255,107,26,0.75)', background: 'none',
+  border: 'none', cursor: 'pointer', padding: 0,
+};
+
 export default function PermissionGate({ onRetry }) {
   const navigate = useNavigate();
 
   return (
-    <div className="h-full w-full flex flex-col items-center justify-center bg-background px-6">
-      {/* Camera off icon */}
-      <div className="w-20 h-20 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center mb-6">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
+    <div style={pageStyle}>
+      <div style={iconBox}>
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#FF6B1A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M2 2l20 20" />
           <path d="M7 3h10a2 2 0 0 1 2 2v4.5" />
           <path d="M3.53 3.53A2 2 0 0 0 3 5v14a2 2 0 0 0 2 2h14a2 2 0 0 0 1.47-.63" />
@@ -17,32 +60,22 @@ export default function PermissionGate({ onRetry }) {
         </svg>
       </div>
 
-      {/* Title */}
-      <h2 className="text-xl font-bold text-white mb-2">Camera access required</h2>
-      <p className="text-[14px] text-white-60 text-center max-w-sm mb-8 leading-relaxed">
+      <h2 style={heading}>Camera access required</h2>
+      <p style={subtext}>
         Virtuar uses your camera to place 3D models in your space.
         Please allow camera access to continue.
       </p>
 
-      {/* Retry button */}
-      <button
-        onClick={onRetry}
-        className="w-full max-w-xs h-12 rounded-2xl bg-accent text-background font-semibold text-[15px] flex items-center justify-center gap-2 active:scale-[0.97] transition-transform cursor-pointer mb-4"
-      >
+      <button onClick={onRetry} style={primaryBtn}>
         Grant access
       </button>
 
-      {/* Instructions */}
-      <p className="text-[12px] text-white-60 text-center max-w-xs mb-6">
+      <p style={hint}>
         If the prompt doesn&apos;t appear, check your browser settings:
         Settings → Site Settings → Camera → Allow for this site.
       </p>
 
-      {/* Back link */}
-      <button
-        onClick={() => navigate('/')}
-        className="text-[13px] text-accent/80 hover:text-accent transition-colors cursor-pointer"
-      >
+      <button onClick={() => navigate('/')} style={backLink}>
         ← Back to home
       </button>
     </div>

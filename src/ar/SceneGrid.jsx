@@ -12,10 +12,10 @@ export default function SceneGrid() {
       args={[20, 20]}
       cellSize={0.5}
       cellThickness={0.5}
-      cellColor="#007A8A"
+      cellColor="#3B2A1A"
       sectionSize={2}
       sectionThickness={1}
-      sectionColor="#00E5FF"
+      sectionColor="#FF6B1A"
       fadeDistance={12}
       fadeStrength={1.5}
       infiniteGrid

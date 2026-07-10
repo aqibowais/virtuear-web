@@ -48,7 +48,7 @@ function ModelLoadFallback() {
   return (
     <mesh position={[0, 0.5, 0]}>
       <boxGeometry args={[0.3, 0.3, 0.3]} />
-      <meshStandardMaterial color="#007A8A" wireframe />
+      <meshStandardMaterial color="#FF6B1A" wireframe />
     </mesh>
   );
 }

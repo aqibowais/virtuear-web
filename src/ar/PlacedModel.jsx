@@ -36,7 +36,7 @@ function ModelMesh({ object }) {
       {isSelected && (
         <mesh>
           <sphereGeometry args={[2, 12, 12]} />
-          <meshBasicMaterial color="#00E5FF" transparent opacity={0.06} wireframe />
+          <meshBasicMaterial color="#FF6B1A" transparent opacity={0.06} wireframe />
         </mesh>
       )}
     </group>
@@ -55,7 +55,7 @@ function PlaceholderBox({ position }) {
   return (
     <mesh position={position}>
       <boxGeometry args={[0.1, 0.1, 0.1]} />
-      <meshBasicMaterial color="#00E5FF" wireframe transparent opacity={0.5} />
+      <meshBasicMaterial color="#FF6B1A" wireframe transparent opacity={0.5} />
     </mesh>
   );
 }
