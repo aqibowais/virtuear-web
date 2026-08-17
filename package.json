@@ -8,7 +8,9 @@
     "dev": "vite",
     "build:ar": "node node_modules/webpack/bin/webpack.js --config config/ar/webpack.config.cjs",
     "postbuild:ar": "node scripts/copy-ar-dist.js",
-    "build": "npm run build:ar && vite build",
+    "build:alpharas": "node node_modules/webpack/bin/webpack.js --config config/ar/webpack-alpharas.config.cjs",
+    "postbuild:alpharas": "node scripts/copy-alpharas-dist.js",
+    "build": "npm run build:ar && npm run build:alpharas && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },

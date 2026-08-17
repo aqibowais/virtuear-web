@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import WelcomePage from './pages/WelcomePage.jsx';
 
 const ArSessionPage = lazy(() => import('./pages/ArSessionPage.jsx'));
+const AlpharasSessionPage = lazy(() => import('./pages/AlpharasSessionPage.jsx'));
 
 function LoadingFallback() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<WelcomePage />} />
           <Route path="/session" element={<ArSessionPage />} />
+          <Route path="/alpharas" element={<AlpharasSessionPage />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

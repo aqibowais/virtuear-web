@@ -2,11 +2,13 @@ import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { MODEL_CATALOG } from '../data/modelCatalog.js';
+import { ALPHARAS_TARGETS } from '../data/alpharasCatalog.js';
 
 const NAV_LINKS = [
   { id: 'home', label: 'Home' },
   { id: 'features', label: 'Features' },
   { id: 'models', label: 'Models' },
+  { id: 'image-ar', label: 'Image AR' },
 ];
 
 const FEATURES = [
@@ -368,12 +370,85 @@ export default function WelcomePage() {
           </div>
         </section>
 
+        {/* IMAGE AR — LES ALPHARAS */}
+        <section id="image-ar" style={{ paddingBottom: '4rem' }}>
+          <div style={{
+            ...cardStyle, padding: '2.5rem 1.5rem', borderRadius: '1.5rem',
+            borderColor: 'rgba(147,51,234,0.15)',
+            background: 'linear-gradient(135deg, #12161E 0%, #1a1025 100%)',
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <span style={{
+                display: 'inline-block', padding: '4px 14px', borderRadius: 9999,
+                background: 'rgba(147,51,234,0.12)', border: '1px solid rgba(147,51,234,0.25)',
+                fontSize: 12, fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase',
+                color: '#A855F7',
+              }}>
+                New Feature
+              </span>
+            </div>
+            <h2 className="font-display" style={{
+              marginTop: 14, textAlign: 'center',
+              fontSize: 'clamp(2rem, 5vw, 3.4rem)', lineHeight: 1, letterSpacing: '0.03em',
+              background: 'linear-gradient(180deg, #F5F5F5 18%, #A855F7 55%, #7C3AED 100%)',
+              WebkitBackgroundClip: 'text', backgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}>
+              Les Alpharas — Image AR
+            </h2>
+            <p style={{
+              marginTop: 14, fontSize: 16, lineHeight: 1.7, color: 'rgba(255,255,255,0.4)',
+              maxWidth: '42rem', margin: '14px auto 0', textAlign: 'center',
+            }}>
+              Print a target image, point your camera at it, and watch the Alphara character
+              come to life with a video overlay — right on top of the printed page.
+            </p>
+
+            <div style={{
+              display: 'grid', gap: '1rem', marginTop: '1.75rem',
+            }} className="grid md:grid-cols-3">
+              {[
+                { icon: '📷', title: 'Image Detection', desc: 'Recognizes printed Alphara images using your camera' },
+                { icon: '🎬', title: 'Video Overlay', desc: 'Plays the character video directly over the detected image' },
+                { icon: '📚', title: `${ALPHARAS_TARGETS.length} Characters`, desc: 'Full set of Alphara characters with unique videos' },
+              ].map((item) => (
+                <div key={item.title} style={{
+                  padding: '1.25rem', borderRadius: '1rem',
+                  backgroundColor: 'rgba(7,9,15,0.5)',
+                  border: '1px solid rgba(147,51,234,0.1)',
+                }}>
+                  <span style={{ fontSize: 24 }}>{item.icon}</span>
+                  <h4 style={{ marginTop: 8, fontSize: 15, fontWeight: 600 }}>{item.title}</h4>
+                  <p style={{ marginTop: 6, fontSize: 13, lineHeight: 1.5, color: 'rgba(255,255,255,0.4)' }}>
+                    {item.desc}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+              <button
+                type="button"
+                onClick={() => navigate('/alpharas')}
+                style={{
+                  ...btnPrimary,
+                  backgroundColor: '#A855F7',
+                  color: '#fff',
+                  boxShadow: '0 8px 28px rgba(147,51,234,0.3)',
+                }}
+              >
+                Launch Image AR
+              </button>
+            </div>
+          </div>
+        </section>
+
         {/* FOOTER */}
         <footer style={{ paddingBottom: '2.5rem' }}>
           <div style={{ height: 1, background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent)', marginBottom: '1.5rem' }} />
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', fontSize: 13, color: 'rgba(255,255,255,0.22)', textAlign: 'center' }}>
             <p>Virtuar · Browser-based AR</p>
-            <p>React · Three.js · 8th Wall</p>
+            <p>React · Three.js · 8th Wall · Image AR</p>
           </div>
         </footer>
       </main>
