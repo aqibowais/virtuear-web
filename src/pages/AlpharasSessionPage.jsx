@@ -37,17 +37,37 @@ const cardStyle = {
   borderRadius: '1.25rem',
 };
 
+function readEngine() {
+  if (typeof window === 'undefined') return '8thwall';
+  const q = new URLSearchParams(window.location.search).get('engine');
+  if (q === 'easyar' || q === '8thwall') {
+    localStorage.setItem('alpharas-engine', q);
+    return q;
+  }
+  return localStorage.getItem('alpharas-engine') === 'easyar' ? 'easyar' : '8thwall';
+}
+
 export default function AlpharasSessionPage() {
   const navigate = useNavigate();
   const [status, setStatus] = useState('loading');
   const [isMobile, setIsMobile] = useState(false);
   const [showQr, setShowQr] = useState(false);
   const [customUrl, setCustomUrl] = useState('');
+  const [engine, setEngine] = useState('8thwall');
 
   useEffect(() => {
     setIsMobile(isMobileDevice());
+    setEngine(readEngine());
     setStatus('ready');
   }, []);
+
+  const setEngineAndUrl = (next) => {
+    setEngine(next);
+    localStorage.setItem('alpharas-engine', next);
+    const url = new URL(window.location.href);
+    url.searchParams.set('engine', next);
+    window.history.replaceState({}, '', url);
+  };
 
   const handleBack = useCallback(() => {
     navigate('/');
@@ -58,7 +78,7 @@ export default function AlpharasSessionPage() {
     if (typeof window === 'undefined') return '/alpharas';
     const { hostname, port, protocol } = window.location;
     if (hostname === 'localhost' || hostname === '127.0.0.1') return '';
-    return `${protocol}//${hostname}${port ? ':' + port : ''}/alpharas`;
+    return `${protocol}//${hostname}${port ? ':' + port : ''}/alpharas?engine=${engine}`;
   };
 
   const alpharasUrl = getAlpharasUrl();
@@ -76,13 +96,14 @@ export default function AlpharasSessionPage() {
   }
 
   if (isMobile) {
+    const arSrc = engine === 'easyar' ? '/ar-easyar/index.html' : '/ar-alpharas/index.html';
     return (
       <div style={{
         position: 'fixed', inset: 0, width: '100%', height: '100%',
         backgroundColor: '#07090F',
       }}>
         <iframe
-          src="/ar-alpharas/index.html"
+          src={arSrc}
           title="Les Alpharas AR"
           allow="camera; microphone; gyroscope; accelerometer; xr-spatial-tracking; autoplay; fullscreen"
           allowFullScreen
@@ -126,6 +147,35 @@ export default function AlpharasSessionPage() {
           </svg>
           Back
         </button>
+
+        <div style={{
+          marginTop: '1.25rem', display: 'flex', gap: 8, padding: 6,
+          borderRadius: 16, background: 'rgba(18,22,30,0.9)',
+          border: '1px solid rgba(255,255,255,0.08)',
+        }}>
+          {[
+            { id: '8thwall', label: '8th Wall', color: '#A855F7' },
+            { id: 'easyar', label: 'EasyAR', color: '#38BDF8' },
+          ].map((opt) => (
+            <button
+              key={opt.id}
+              type="button"
+              onClick={() => setEngineAndUrl(opt.id)}
+              style={{
+                flex: 1, padding: '10px 12px', borderRadius: 12, border: 'none',
+                cursor: 'pointer', fontWeight: 700, fontSize: 14,
+                background: engine === opt.id ? opt.color : 'transparent',
+                color: engine === opt.id ? '#fff' : 'rgba(255,255,255,0.6)',
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+        <p style={{ marginTop: 10, fontSize: 13, color: 'rgba(255,255,255,0.4)', lineHeight: 1.5 }}>
+          Toggle engines on the phone AR screen too. Same printed targets and videos.
+          Open the <b>Lab</b> panel to time recognition, FPS, jitter, and mark the professor’s tests.
+        </p>
 
         {/* Header */}
         <div style={{ textAlign: 'center', marginTop: '2rem' }}>

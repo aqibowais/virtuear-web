@@ -1,0 +1,15 @@
+﻿{
+  "imagePath": "./image-targets/tracking/1_luminance.jpg",
+  "metadata": {},
+  "name": "1",
+  "type": "PLANAR",
+  "properties": {
+    "left": 0,
+    "top": 0,
+    "width": 480,
+    "height": 640,
+    "originalWidth": 480,
+    "originalHeight": 640,
+    "isRotated": false
+  }
+}

@@ -3,6 +3,9 @@
 This AR experience uses **8th Wall's XR8 engine** to detect printed target images
 and play corresponding videos as AR overlays.
 
+Engine toggle for the professor’s comparison: `/alpharas?engine=8thwall` or `/alpharas?engine=easyar`.
+EasyAR notes: `src/ar-easyar/SETUP.md`. Report template: `COMPARISON-REPORT.md` at the repo root.
+
 There is **no App Key**. 8th Wall Studio's Publish dialog (HTML5 / Embed) is for
 exporting a Studio-built game, not for this self-hosted React app.
 

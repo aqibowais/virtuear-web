@@ -16,6 +16,7 @@
   },
   "include": [
     "src/ar-alpharas",
+    "src/ar-shared",
     "config/ar/types/**/*"
   ]
 }

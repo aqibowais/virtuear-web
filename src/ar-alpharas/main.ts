@@ -1,3 +1,6 @@
+import { ComparisonMetrics } from '../ar-shared/metrics'
+import { mountComparisonLab } from '../ar-shared/lab-ui'
+
 export {}
 
 declare global {
@@ -44,6 +47,7 @@ const MUTE_ICON_ON =
 
 const meshes: Record<string, any> = {}
 let scene3: any = null
+const metrics = new ComparisonMetrics('8thwall')
 
 const _w = window as any
 
@@ -74,6 +78,8 @@ function showVideo(name: string, detail: any) {
       vid.muted = _w._alpharas.soundMuted
       vid.play().catch(() => {})
     }
+    metrics.markFound(name, detail.position?.x || 0, detail.position?.y || 0)
+    updateStatusUI('found', name)
     return
   }
 
@@ -110,6 +116,7 @@ function showVideo(name: string, detail: any) {
   meshes[name] = mesh
 
   _w._alpharas.activeTargets.add(name)
+  metrics.markFound(name, detail.position?.x || 0, detail.position?.y || 0)
   updateStatusUI('found', name)
 }
 
@@ -121,6 +128,7 @@ function updateVideo(name: string, detail: any) {
   mesh.quaternion.copy(detail.rotation)
   mesh.scale.set(detail.scale, detail.scale, detail.scale)
   mesh.visible = true
+  metrics.markUpdated(detail.position?.x || 0, detail.position?.y || 0)
 }
 
 function hideVideo(name: string) {
@@ -135,6 +143,7 @@ function hideVideo(name: string) {
   _w._alpharas.activeTargets.delete(name)
 
   if (_w._alpharas.activeTargets.size === 0) {
+    metrics.markLost()
     updateStatusUI('scanning')
   }
 }
@@ -222,6 +231,10 @@ const alpharasImageTargetModule = () => ({
   onStart: () => {
     fitCanvasesToWindow()
     bindOverlayUI()
+    mountComparisonLab(metrics)
+    metrics.startScan()
+    const tick = () => { metrics.tick(); requestAnimationFrame(tick) }
+    requestAnimationFrame(tick)
 
     const loading = document.getElementById('loading-overlay')
     if (loading) loading.classList.add('hidden')

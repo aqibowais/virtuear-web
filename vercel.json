@@ -2,6 +2,7 @@
   "rewrites": [
     { "source": "/ar/(.*)", "destination": "/ar/$1" },
     { "source": "/ar-alpharas/(.*)", "destination": "/ar-alpharas/$1" },
+    { "source": "/ar-easyar/(.*)", "destination": "/ar-easyar/$1" },
     { "source": "/(.*)", "destination": "/" }
   ]
 }

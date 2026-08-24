@@ -426,10 +426,10 @@ export default function WelcomePage() {
               ))}
             </div>
 
-            <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+            <div style={{ marginTop: '2rem', textAlign: 'center', display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
               <button
                 type="button"
-                onClick={() => navigate('/alpharas')}
+                onClick={() => navigate('/alpharas?engine=8thwall')}
                 style={{
                   ...btnPrimary,
                   backgroundColor: '#A855F7',
@@ -437,7 +437,18 @@ export default function WelcomePage() {
                   boxShadow: '0 8px 28px rgba(147,51,234,0.3)',
                 }}
               >
-                Launch Image AR
+                Launch 8th Wall
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/alpharas?engine=easyar')}
+                style={{
+                  ...btnPrimary,
+                  backgroundColor: '#38BDF8',
+                  color: '#071018',
+                }}
+              >
+                Launch EasyAR
               </button>
             </div>
           </div>
@@ -448,7 +459,7 @@ export default function WelcomePage() {
           <div style={{ height: 1, background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent)', marginBottom: '1.5rem' }} />
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', fontSize: 13, color: 'rgba(255,255,255,0.22)', textAlign: 'center' }}>
             <p>Virtuar · Browser-based AR</p>
-            <p>React · Three.js · 8th Wall · Image AR</p>
+            <p>React · Three.js · 8th Wall · EasyAR · Image AR</p>
           </div>
         </footer>
       </main>
