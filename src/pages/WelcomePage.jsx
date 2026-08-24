@@ -408,9 +408,9 @@ export default function WelcomePage() {
               display: 'grid', gap: '1rem', marginTop: '1.75rem',
             }} className="grid md:grid-cols-3">
               {[
-                { icon: '📷', title: 'Image Detection', desc: 'Recognizes printed Alphara images using your camera' },
-                { icon: '🎬', title: 'Video Overlay', desc: 'Plays the character video directly over the detected image' },
-                { icon: '📚', title: `${ALPHARAS_TARGETS.length} Characters`, desc: 'Full set of Alphara characters with unique videos' },
+                { icon: '', title: 'Image Detection', desc: 'Recognizes printed Alphara images using your camera' },
+                { icon: '', title: 'Video Overlay', desc: 'Plays the character video directly over the detected image' },
+                { icon: '', title: `${ALPHARAS_TARGETS.length} Characters`, desc: 'Full set of Alphara characters with unique videos' },
               ].map((item) => (
                 <div key={item.title} style={{
                   padding: '1.25rem', borderRadius: '1rem',
