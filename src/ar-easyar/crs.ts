@@ -1,4 +1,4 @@
-import { EASYAR_CRS } from './config'
+import { EASYAR_CRS, crsSearchBase } from './config'
 
 export type CrsHit = {
   name: string
@@ -6,9 +6,14 @@ export type CrsHit = {
   latencyMs: number
 }
 
-export async function searchCrs(imageBase64: string): Promise<CrsHit | null> {
+export type CrsSearch =
+  | { status: 'hit'; hit: CrsHit }
+  | { status: 'nomatch'; latencyMs: number }
+  | { status: 'error'; message: string; latencyMs: number }
+
+export async function searchCrs(imageBase64: string): Promise<CrsSearch> {
   const started = performance.now()
-  const url = `${EASYAR_CRS.clientendUrl.replace(/\/$/, '')}/search`
+  const url = `${crsSearchBase().replace(/\/$/, '')}/search`
   const res = await fetch(url, {
     method: 'POST',
     headers: {
@@ -21,25 +26,46 @@ export async function searchCrs(imageBase64: string): Promise<CrsHit | null> {
       notracking: true,
     }),
   })
-  const data = await res.json()
+
   const latencyMs = Math.round(performance.now() - started)
-  if (data?.statusCode === 0 && data?.result?.target) {
+  let data: any = null
+  try {
+    data = await res.json()
+  } catch {
+    return { status: 'error', message: `CRS HTTP ${res.status}`, latencyMs }
+  }
+
+  const code = data?.statusCode
+  const target = data?.result?.target || (data?.result?.name ? data.result : null)
+  if (code === 0 && target?.name) {
+    const raw = String(target.name || '')
+    const name = raw.replace(/^(image-|letter-)/, '')
     return {
-      name: String(data.result.target.name || ''),
-      targetId: data.result.target.targetId,
-      latencyMs,
+      status: 'hit',
+      hit: {
+        name,
+        targetId: target.targetId,
+        latencyMs,
+      },
     }
   }
-  return null
+  if (code === 17) {
+    return { status: 'nomatch', latencyMs }
+  }
+  const rawMessage = data?.result?.message || data?.msg || data?.message || `CRS status ${code ?? res.status}`
+  if (code === 21 || /quota|limit|exceed/i.test(String(rawMessage))) {
+    return { status: 'error', message: `CRS quota: ${rawMessage}`, latencyMs }
+  }
+  return { status: 'error', message: String(rawMessage), latencyMs }
 }
 
 export function frameToJpegBase64(video: HTMLVideoElement, canvas: HTMLCanvasElement) {
-  const maxW = 480
+  const maxW = 320
   const scale = Math.min(1, maxW / Math.max(1, video.videoWidth))
-  canvas.width = Math.round(video.videoWidth * scale)
-  canvas.height = Math.round(video.videoHeight * scale)
+  canvas.width = Math.max(1, Math.round(video.videoWidth * scale))
+  canvas.height = Math.max(1, Math.round(video.videoHeight * scale))
   const ctx = canvas.getContext('2d')
   if (!ctx) return ''
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-  return canvas.toDataURL('image/jpeg', 0.7).split('base64,').pop() || ''
+  return canvas.toDataURL('image/jpeg', 0.55).split('base64,').pop() || ''
 }

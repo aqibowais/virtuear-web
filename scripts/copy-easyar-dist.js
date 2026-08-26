@@ -1,4 +1,4 @@
-import { cpSync, rmSync, existsSync } from 'fs'
+import { copyFileSync, mkdirSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -7,9 +7,8 @@ const root = join(__dirname, '..')
 const src = join(root, 'easyar-dist')
 const dest = join(root, 'public', 'ar-easyar')
 
-if (existsSync(dest)) {
-  rmSync(dest, { recursive: true, force: true })
-}
+mkdirSync(dest, { recursive: true })
+copyFileSync(join(src, 'index.html'), join(dest, 'index.html'))
+copyFileSync(join(src, 'bundle.js'), join(dest, 'bundle.js'))
 
-cpSync(src, dest, { recursive: true })
-console.log('Copied easyar-dist/ → public/ar-easyar/')
+console.log('Copied easyar index.html + bundle.js → public/ar-easyar/')

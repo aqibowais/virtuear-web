@@ -1,20 +1,32 @@
 import { ComparisonMetrics } from '../ar-shared/metrics'
 import { mountComparisonLab } from '../ar-shared/lab-ui'
-import { crsEnabled, videoPathFor } from './config'
+import { videoPathFor } from './config'
 import { frameToJpegBase64, searchCrs } from './crs'
-import { LocalImageTracker } from './local-tracker'
+import { applyQuadOverlay, fallbackCorners, hideOverlay } from './overlay'
+import { PoseTracker } from './pose-tracker'
+
+const MUTE_ICON_OFF =
+  '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>' +
+  '<line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>'
+const MUTE_ICON_ON =
+  '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>' +
+  '<path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>' +
+  '<path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>'
 
 const metrics = new ComparisonMetrics('easyar')
-const tracker = new LocalImageTracker()
+const tracker = new PoseTracker()
 
 let camera: HTMLVideoElement
 let overlay: HTMLVideoElement
 let snap: HTMLCanvasElement
 let currentId: string | null = null
-let lostFrames = 0
 let soundMuted = true
 let lastCrsAt = 0
-let lastMatchAt = 0
+let lastPoseAt = 0
+let lastSeenAt = 0
+let searching = false
+let crsMisses = 0
+let lastCorners: number[] | null = null
 
 function goHome() {
   stopCamera()
@@ -39,15 +51,30 @@ function applyMute() {
   overlay.muted = soundMuted
   const btn = document.getElementById('alpharas-mute')
   const label = document.getElementById('mute-label')
+  const icon = document.getElementById('mute-icon')
   btn?.classList.toggle('on', !soundMuted)
   if (label) label.textContent = soundMuted ? 'Sound Off' : 'Sound On'
+  if (icon) icon.innerHTML = soundMuted ? MUTE_ICON_OFF : MUTE_ICON_ON
 }
 
-function setStatus(text: string, found = false) {
-  const el = document.getElementById('alpharas-status')
-  if (!el) return
-  el.textContent = text
-  el.classList.toggle('found', found)
+function updateStatusUI(status: 'scanning' | 'found', targetName?: string) {
+  const badge = document.getElementById('alpharas-status')
+  if (!badge) return
+
+  if (status === 'scanning') {
+    badge.textContent = 'Point camera at a target image'
+    badge.classList.remove('found')
+    badge.style.opacity = '1'
+    return
+  }
+
+  const clean = (targetName || '').replace(/^(image-|letter-)/, '')
+  badge.textContent = `Playing video for Alphara ${clean}`
+  badge.classList.add('found')
+  badge.style.opacity = '1'
+  setTimeout(() => {
+    if (badge.classList.contains('found')) badge.style.opacity = '0.7'
+  }, 2000)
 }
 
 function sampleBrightness() {
@@ -64,139 +91,124 @@ function sampleBrightness() {
   metrics.brightness = Math.round(sum / (data.length / 4))
 }
 
-function videoToCss(x: number, y: number) {
-  const vw = camera.videoWidth
-  const vh = camera.videoHeight
-  const cw = window.innerWidth
-  const ch = window.innerHeight
-  const scale = Math.max(cw / vw, ch / vh)
-  return {
-    x: x * scale + (cw - vw * scale) / 2,
-    y: y * scale + (ch - vh * scale) / 2,
-  }
-}
-
-function applyOverlay(corners: number[]) {
-  const css = [0, 2, 4, 6].map((i) => videoToCss(corners[i], corners[i + 1]))
-  const w = overlay.videoWidth || 640
-  const h = overlay.videoHeight || 360
-  overlay.style.display = 'block'
-  overlay.style.width = `${w}px`
-  overlay.style.height = `${h}px`
-  overlay.style.transformOrigin = '0 0'
-  overlay.style.transform = homographyCss(w, h, css)
-}
-
-function hideOverlay() {
-  overlay.style.display = 'none'
-  overlay.pause()
-}
-
-function homographyCss(w: number, h: number, dst: {x: number, y: number}[]) {
-  const src = [{x: 0, y: 0}, {x: w, y: 0}, {x: w, y: h}, {x: 0, y: h}]
-  const H = solveHomography(src, dst)
-  const m = [
-    H[0], H[3], 0, H[6],
-    H[1], H[4], 0, H[7],
-    0, 0, 1, 0,
-    H[2], H[5], 0, H[8],
-  ]
-  return `matrix3d(${m.join(',')})`
-}
-
-function solveHomography(src: {x: number, y: number}[], dst: {x: number, y: number}[]) {
-  const A: number[][] = []
-  const b: number[] = []
-  for (let i = 0; i < 4; i++) {
-    const {x, y} = src[i]
-    const u = dst[i].x
-    const v = dst[i].y
-    A.push([x, y, 1, 0, 0, 0, -x * u, -y * u])
-    b.push(u)
-    A.push([0, 0, 0, x, y, 1, -x * v, -y * v])
-    b.push(v)
-  }
-  const h = gaussSolve(A, b)
-  return [h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7], 1]
-}
-
-function gaussSolve(A: number[][], b: number[]) {
-  const n = b.length
-  const M = A.map((row, i) => [...row, b[i]])
-  for (let i = 0; i < n; i++) {
-    let max = i
-    for (let r = i + 1; r < n; r++) if (Math.abs(M[r][i]) > Math.abs(M[max][i])) max = r
-    ;[M[i], M[max]] = [M[max], M[i]]
-    const piv = M[i][i] || 1e-12
-    for (let c = i; c <= n; c++) M[i][c] /= piv
-    for (let r = 0; r < n; r++) {
-      if (r === i) continue
-      const f = M[r][i]
-      for (let c = i; c <= n; c++) M[r][c] -= f * M[i][c]
-    }
-  }
-  return M.map((row) => row[n])
-}
-
-async function playTarget(id: string) {
+function playTarget(id: string) {
   const path = videoPathFor(id)
-  if (!overlay.src.endsWith(path.replace('./', ''))) {
+  const current = overlay.getAttribute('src') || overlay.src
+  if (!current.endsWith(path.replace('./', ''))) {
     overlay.src = path
   }
   overlay.muted = soundMuted
   overlay.play().catch(() => {})
+  lastCorners = fallbackCorners(camera)
+  applyQuadOverlay(overlay, lastCorners, camera)
 }
 
-async function loop() {
+function loseTarget() {
+  if (!currentId) return
+  metrics.markLost()
+  currentId = null
+  crsMisses = 0
+  lastSeenAt = 0
+  lastCorners = null
+  tracker.reset()
+  hideOverlay(overlay)
+  updateStatusUI('scanning')
+}
+
+function lockTarget(id: string, x = 0, y = 0) {
+  const switched = currentId !== id
+  currentId = id
+  crsMisses = 0
+  lastSeenAt = performance.now()
+  if (switched) {
+    tracker.reset()
+    tracker.ensure(id).catch(() => {})
+    playTarget(id)
+    metrics.markFound(id, x, y)
+    updateStatusUI('found', id)
+  } else if (overlay.paused) {
+    overlay.play().catch(() => {})
+  }
+}
+
+async function pollCrs() {
+  if (searching || !camera.videoWidth) return
+  searching = true
+  try {
+    const jpeg = frameToJpegBase64(camera, snap)
+    if (!jpeg) return
+    const result = await searchCrs(jpeg)
+    if (result.status === 'hit') {
+      lockTarget(result.hit.name)
+      return
+    }
+    if (result.status === 'nomatch' && currentId) {
+      crsMisses += 1
+      const poseFresh = performance.now() - lastSeenAt < 500
+      if (crsMisses >= 3 || (crsMisses >= 2 && !poseFresh)) loseTarget()
+      return
+    }
+    if (result.status === 'error') {
+      const el = document.getElementById('alpharas-status')
+      if (el && !currentId) el.textContent = result.message
+    }
+  } catch (err: any) {
+    if (!currentId) {
+      const el = document.getElementById('alpharas-status')
+      if (el) el.textContent = err?.message || 'CRS request failed'
+    }
+  } finally {
+    searching = false
+  }
+}
+
+function loop() {
   metrics.tick()
   sampleBrightness()
 
-  let hit = null
-  if (tracker.ready && performance.now() - lastMatchAt > 180) {
-    lastMatchAt = performance.now()
-    hit = tracker.matchFrame(camera, currentId)
-  }
-
-  if (!hit && crsEnabled() && !currentId && performance.now() - lastCrsAt > 400) {
-    lastCrsAt = performance.now()
-    const jpeg = frameToJpegBase64(camera, snap)
-    if (jpeg) {
-      try {
-        const crs = await searchCrs(jpeg)
-        if (crs?.name) {
-          currentId = crs.name.replace(/^(image-|letter-)/, '')
-          metrics.markFound(currentId)
-          setStatus(`EasyAR CRS: Alphara ${currentId}`, true)
-          playTarget(currentId)
-        }
-      } catch (err) {
-        console.warn('CRS search failed', err)
+  if (currentId) {
+    if (performance.now() - lastPoseAt > 50) {
+      lastPoseAt = performance.now()
+      const hit = tracker.track(camera, currentId)
+      if (hit) {
+        lastSeenAt = performance.now()
+        lastCorners = hit.corners
+        metrics.markUpdated(hit.centerX, hit.centerY)
+        applyQuadOverlay(overlay, hit.corners, camera)
+      } else if (lastCorners) {
+        applyQuadOverlay(overlay, lastCorners, camera)
       }
     }
+
+    if (performance.now() - lastSeenAt > 1600 && crsMisses >= 2) {
+      loseTarget()
+    }
   }
 
-  if (hit) {
-    lostFrames = 0
-    if (currentId !== hit.id) {
-      currentId = hit.id
-      metrics.markFound(hit.id, hit.centerX, hit.centerY)
-      setStatus(`Playing video for Alphara ${hit.id}`, true)
-      playTarget(hit.id)
-    } else {
-      metrics.markUpdated(hit.centerX, hit.centerY)
-    }
-    applyOverlay(hit.corners)
-  } else if (currentId) {
-    lostFrames += 1
-    if (lostFrames > 8) {
-      metrics.markLost()
-      currentId = null
-      hideOverlay()
-      setStatus('Point camera at a target image')
-    }
+  const interval = currentId ? 1100 : 450
+  if (performance.now() - lastCrsAt > interval) {
+    lastCrsAt = performance.now()
+    pollCrs()
   }
 
   requestAnimationFrame(loop)
+}
+
+function bindOverlayUI() {
+  const backBtn = document.getElementById('alpharas-back')
+  const muteBtn = document.getElementById('alpharas-mute')
+  backBtn?.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: false })
+  backBtn?.addEventListener('click', (e) => {
+    e.stopPropagation()
+    goHome()
+  })
+  muteBtn?.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: false })
+  muteBtn?.addEventListener('click', (e) => {
+    e.stopPropagation()
+    soundMuted = !soundMuted
+    applyMute()
+  })
+  applyMute()
 }
 
 async function start() {
@@ -204,16 +216,7 @@ async function start() {
   overlay = document.getElementById('ar-video') as HTMLVideoElement
   snap = document.createElement('canvas')
 
-  document.getElementById('alpharas-back')?.addEventListener('click', (e) => {
-    e.stopPropagation()
-    goHome()
-  })
-  document.getElementById('alpharas-mute')?.addEventListener('click', (e) => {
-    e.stopPropagation()
-    soundMuted = !soundMuted
-    applyMute()
-  })
-  applyMute()
+  bindOverlayUI()
   mountComparisonLab(metrics)
   metrics.startScan()
 
@@ -224,21 +227,7 @@ async function start() {
   camera.srcObject = stream
   await camera.play()
 
-  const mode = document.getElementById('easyar-mode')
-  if (mode) {
-    mode.textContent = crsEnabled() ? 'EasyAR CRS + local track' : 'EasyAR local tracker'
-  }
-
-  try {
-    setStatus('Loading tracker…')
-    await tracker.init()
-    setStatus('Point camera at a target image')
-  } catch (err: any) {
-    console.error(err)
-    const detail = err?.message || 'Failed to load EasyAR tracker'
-    setStatus(crsEnabled() ? `CRS only — ${detail}` : detail)
-  }
-
+  updateStatusUI('scanning')
   document.getElementById('loading-overlay')?.classList.add('hidden')
   loop()
 }

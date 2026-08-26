@@ -1,52 +1,14 @@
-# EasyAR setup (what you need to do)
+# EasyAR CRS setup
 
-There are **two** EasyAR paths. Do **A** first so the page works today.
-Do **B** only if Aymen wants official EasyAR Cloud Recognition in the comparison.
+The EasyAR path uses **Cloud Recognition (CRS)** to identify the print, then a **local pose tracker** to pin the video on the image (same overlay idea as 8th Wall).
 
----
+Credentials live in `src/ar-easyar/config.ts` (AppId, Token, API Key, Client-end URL). **Do not push that file to a public repo.** The API Secret stays in the EasyAR portal — the web client does not use it.
 
-## A. Local tracker (no EasyAR account, no extra download)
+## What you still need to do in the portal
 
-This matches the printed `imagesAR` files in the app. It does **not** download OpenCV.js.
+The library `virtuarwebar` showed **1 / 100000** images. CRS only matches images that are **uploaded and enabled**. Upload all 12 prints:
 
-1. From `virtuear-web` run `npm run dev` (HTTPS).
-2. On the phone open `https://<your-pc-ip>:5173/alpharas?engine=easyar`
-3. Allow camera. Wait for **Point camera at a target image**.
-4. Scan prints from `src/ar-alpharas/assets/image-targets/imagesAR/`.
-
----
-
-## B. Official EasyAR WebAR (CRS) — required for a true EasyAR column
-
-EasyAR’s **web** product does **not** ship Sense ImageTracker. It only does **cloud image recognition**. You must create a CRS library.
-
-### 1. Create an EasyAR developer account
-
-1. Open [https://www.easyar.com/](https://www.easyar.com/)
-2. Sign up / log in (Sense / CRS enabled).
-3. Open the **Developer / CRS** console.
-
-### 2. Create API credentials
-
-1. In the console create (or open) an **API Key** that includes **Cloud Recognition**.
-2. Copy:
-   - **API Key**
-   - **API Secret**
-3. Create a **CRS token** from Key + Secret (EasyAR console → Token / Cloud Token).
-
-### 3. Create a Cloud Recognition image library
-
-1. Create a **CRS image library**.
-2. Copy these three values:
-   - **CRS AppId**
-   - **Client-end URL** (looks like `https://xxxx.cn1.crs.easyar.com:8443`)
-   - **Cloud Token** (from step 2)
-
-### 4. Upload the same 12 targets
-
-Upload from:
-
-`G:\mitacs project\virtuear-web\src\ar-alpharas\assets\image-targets\imagesAR\`
+`src/ar-alpharas/assets/image-targets/imagesAR/`
 
 | File | Target name in CRS (must match) |
 |------|----------------------------------|
@@ -55,42 +17,36 @@ Upload from:
 | … | … |
 | 12.png | `12` |
 
-Use the **resized** files in that folder (already ≥ 480×640). Do not upload the tiny Android originals.
+Use those resized files (already ≥ 480×640). Names must be exactly `1`–`12` so the matching video (`videos/1.mp4`, …) plays.
 
-Optional Meta (base64 JSON is fine too): `{"video":"1.mp4"}` for target `1`, etc.
+After upload, confirm each target is **active**.
 
-### 5. Put the three values in our code
+## Run
 
-Edit `src/ar-easyar/config.ts`:
-
-```ts
-export const EASYAR_CRS = {
-  clientendUrl: 'https://YOUR-ID.cn1.crs.easyar.com:8443',
-  token: 'YOUR_CLOUD_TOKEN',
-  appId: 'YOUR_CRS_APP_ID',
-}
-```
-
-### 6. Rebuild and test
+1. Rebuild EasyAR (after any `src/ar-easyar` change):
 
 ```bash
 npm run build:easyar
-npm run dev
 ```
 
-Open `/alpharas?engine=easyar` on the phone again.
+2. Restart `npm run dev` so the CRS proxy is loaded (`/easyar-crs` → your NA1 Client-end URL).
 
-If the browser console shows a **CORS** error on `/search`, EasyAR is blocking the web origin. Then either:
+3. On the phone: `https://<your-pc-ip>:5173/alpharas?engine=easyar`
 
-- add your HTTPS domain / `localhost` in the CRS library allowed origins (if the console has that), or
-- tell me and we add a tiny local proxy so `/search` is called from the Vite server.
+4. Allow camera. Status should become **Point camera at a target image**, then **Playing video for Alphara N** once the video is locked to the print.
 
-### 7. How to tell which mode is running
+## Limits (trial)
 
-- Badge / footer **EasyAR local tracker** = path A (no account)
-- **EasyAR CRS + local track** = path B (credentials filled in)
+- **500 searches/day.** The app polls about every 0.9s while scanning and 1.8s while a video is playing. Do not point at a print all day during tests.
+- Token expires **2026-10-25**. Library trial listed around **2026-09-09**.
+- CRS on the web returns a **name**, not a native 6DoF pose. Local tracking estimates the image quad so the video covers the print.
 
----
+## If recognition fails
+
+- **No match:** more images still need uploading, or the name is not `1`–`12`.
+- **Quota / limit message:** wait until the daily 500 reset, or upgrade the plan.
+- **Auth error:** generate a new Token in the portal and paste it into `config.ts`, then rebuild.
+- **CORS / network:** only `npm run dev` (or `npm run preview`) proxies CRS. A static host needs its own `/easyar-crs` proxy.
 
 ## Same assets as 8th Wall
 

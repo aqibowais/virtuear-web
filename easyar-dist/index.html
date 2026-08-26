@@ -1,16 +1,27 @@
-<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><title>Les Alpharas – EasyAR</title><meta name="theme-color" content="#0A0E14"><style>* { margin: 0; padding: 0; box-sizing: border-box; }
+<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><title>Les Alpharas – EasyAR</title><meta name="theme-color" content="#0A0E14"><meta name="apple-mobile-web-app-capable" content="yes"><style>* { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
       width: 100%; height: 100%; position: fixed; inset: 0; overflow: hidden;
       background: #0A0E14;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
     }
+    *::-webkit-scrollbar { display: none; }
+    * { scrollbar-width: none; }
+    button { font-family: inherit; }
     #camera {
       position: fixed; inset: 0; width: 100%; height: 100%;
       object-fit: cover; background: #000;
     }
     #ar-video {
-      position: fixed; left: 0; top: 0; display: none;
-      pointer-events: none; z-index: 2;
+      position: fixed;
+      left: 0;
+      top: 0;
+      display: none;
+      pointer-events: none;
+      z-index: 2;
+      object-fit: fill;
+      background: transparent;
     }
     #loading-overlay {
       position: fixed; inset: 0; z-index: 10000;
@@ -34,13 +45,22 @@
       pointer-events: auto;
     }
     .icon-btn {
-      width: 44px; height: 44px; border-radius: 14px;
+      width: 44px; height: 44px; flex-shrink: 0; border-radius: 14px;
       background: rgba(18,22,30,0.88); border: 1px solid rgba(255,255,255,0.1);
       display: flex; align-items: center; justify-content: center; color: #fff;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
-    .sound-btn { width: auto; padding: 0 12px; gap: 8px; font-size: 13px; font-weight: 600; }
+    .sound-btn {
+      width: auto; min-width: 44px; padding: 0 12px; gap: 8px;
+      font-size: 13px; font-weight: 600;
+    }
     .sound-btn.on { border-color: rgba(56,189,248,0.45); color: #38BDF8; }
-    .title { color: #fff; font-size: 17px; font-weight: 700; text-align: center; flex: 1; }
+    .title {
+      color: #fff; font-size: 17px; font-weight: 700; letter-spacing: 0.6px;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.5); text-align: center; flex: 1;
+    }
     .status-wrap {
       position: absolute; top: calc(88px + env(safe-area-inset-top, 0px));
       left: 16px; right: 16px; display: flex; justify-content: center;
@@ -48,12 +68,17 @@
     #alpharas-status {
       padding: 8px 18px; border-radius: 12px;
       background: rgba(56,189,248,0.16); border: 1px solid rgba(56,189,248,0.3);
-      color: #38BDF8; font-size: 14px; font-weight: 500;
+      color: #38BDF8; font-size: 14px; font-weight: 500; text-align: center;
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      transition: opacity 0.3s ease, background 0.3s ease, color 0.3s ease;
     }
-    #alpharas-status.found { background: rgba(34,197,94,0.16); border-color: rgba(34,197,94,0.3); color: #22C55E; }
+    #alpharas-status.found {
+      background: rgba(34,197,94,0.16); border-color: rgba(34,197,94,0.3); color: #22C55E;
+    }
     .bottom-bar {
-      position: absolute; bottom: 72px; left: 0; right: 0;
-      padding: 12px 16px; text-align: center;
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 24px 16px calc(88px + env(safe-area-inset-bottom, 0px));
+      background: linear-gradient(to top, rgba(10,14,20,0.78), transparent);
+      text-align: center;
     }
-    .bottom-bar p { color: rgba(255,255,255,0.5); font-size: 12px; }
-    #easyar-mode { color: #38BDF8; font-weight: 600; }</style></head><body><div id="loading-overlay"><div class="spinner"></div><p class="loading-label">Loading EasyAR local tracker...</p></div><video id="camera" autoplay playsinline muted></video><video id="ar-video" loop playsinline muted></video><div id="alpharas-overlay"><div class="top-bar"><button id="alpharas-back" class="icon-btn" type="button" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button> <span class="title">Les Alpharas</span> <button id="alpharas-mute" class="icon-btn sound-btn" type="button"><span id="mute-label">Sound Off</span></button></div><div class="status-wrap"><div id="alpharas-status">Starting camera…</div></div><div class="bottom-bar"><p id="easyar-mode">EasyAR</p><p>Same printed targets as 8th Wall — use the lab to record trials</p></div></div><script src="bundle.js"></script></body></html>
+    .bottom-bar p { color: rgba(255,255,255,0.55); font-size: 13px; line-height: 1.45; }</style></head><body><div id="loading-overlay"><div class="spinner"></div><p class="loading-label">Loading Les Alpharas...</p></div><video id="camera" autoplay playsinline muted></video><video id="ar-video" loop playsinline muted></video><div id="alpharas-overlay"><div class="top-bar"><button id="alpharas-back" class="icon-btn" type="button" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button> <span class="title">Les Alpharas · EasyAR</span> <button id="alpharas-mute" class="icon-btn sound-btn" type="button" aria-label="Toggle sound"><svg id="mute-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg> <span id="mute-label">Sound Off</span></button></div><div class="status-wrap"><div id="alpharas-status">Point camera at a target image</div></div><div class="bottom-bar"><p>EasyAR cloud recognition + local pose — use the lab to record trials</p></div></div><script src="bundle.js"></script></body></html>
