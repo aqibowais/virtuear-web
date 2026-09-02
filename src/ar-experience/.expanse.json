@@ -19,7 +19,7 @@
     },
     "model-mesh": {
       "id": "model-mesh",
-      "position": [0, 0.8, 0],
+      "position": [0, 0, 0],
       "rotation": [0, 0, 0, 1],
       "scale": [1, 1, 1],
       "parentId": "prefab-robot",
@@ -33,7 +33,7 @@
             "easeOut": true,
             "easingFunction": "Elastic",
             "duration": 1200,
-            "toY": 0.8
+            "toY": 0
           }
         }
       },

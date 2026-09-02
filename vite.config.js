@@ -7,6 +7,9 @@ export default defineConfig({
   plugins: [react(), tailwindcss(), basicSsl()],
   server: {
     host: true,
+    headers: {
+      'Permissions-Policy': 'camera=(self), microphone=(self), gyroscope=(self), accelerometer=(self), xr-spatial-tracking=(self)',
+    },
     proxy: {
       '/easyar-crs': {
         target: 'https://4c29f7119442e8f838b517918dbd00cf.na1.crs.easyar.com:8443',

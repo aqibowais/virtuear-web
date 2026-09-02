@@ -87,8 +87,8 @@ export default function ArHud({ isArMode, onBack }) {
           <div style={pill}>
             <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', textAlign: 'center', margin: 0 }}>
               {isArMode
-                ? 'Scan a flat surface, then tap to place'
-                : 'Tap the floor to place a model'}
+                ? 'Tap a model icon, then tap a surface'
+                : 'Click a model icon, then tap the floor'}
             </p>
           </div>
         </div>

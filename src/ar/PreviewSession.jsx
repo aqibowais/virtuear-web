@@ -8,14 +8,33 @@ import SceneGrid from './SceneGrid.jsx';
 
 function GroundPlane() {
   const placeObject = useSceneStore((s) => s.placeObject);
+  const selectedObjectId = useSceneStore((s) => s.selectedObjectId);
+  const placeMode = useSceneStore((s) => s.placeMode);
+  const isDragging = useSceneStore((s) => s.isDragging);
+  const updateObjectPosition = useSceneStore((s) => s.updateObjectPosition);
+  const setDragging = useSceneStore((s) => s.setDragging);
 
   const handleClick = useCallback(
     (e) => {
+      if (isDragging) return;
       e.stopPropagation();
-      const point = e.point;
-      placeObject([point.x, 0, point.z]);
+      const point = [e.point.x, 0, e.point.z];
+      if (selectedObjectId && !placeMode) {
+        updateObjectPosition(selectedObjectId, point);
+        return;
+      }
+      placeObject(point);
     },
-    [placeObject]
+    [placeObject, selectedObjectId, placeMode, updateObjectPosition, isDragging]
+  );
+
+  const handlePointerMove = useCallback(
+    (e) => {
+      if (!isDragging || !selectedObjectId) return;
+      e.stopPropagation();
+      updateObjectPosition(selectedObjectId, [e.point.x, 0, e.point.z]);
+    },
+    [isDragging, selectedObjectId, updateObjectPosition]
   );
 
   return (
@@ -23,6 +42,8 @@ function GroundPlane() {
       rotation={[-Math.PI / 2, 0, 0]}
       position={[0, -0.001, 0]}
       onClick={handleClick}
+      onPointerMove={handlePointerMove}
+      onPointerUp={() => isDragging && setDragging(false)}
       receiveShadow
     >
       <planeGeometry args={[50, 50]} />
@@ -55,15 +76,10 @@ function ModelLoadFallback() {
 
 function SceneContent() {
   const placedObjects = useSceneStore((s) => s.placedObjects);
-  const selectObject = useSceneStore((s) => s.selectObject);
-
-  const handleMiss = useCallback(() => {
-    selectObject(null);
-  }, [selectObject]);
+  const isDragging = useSceneStore((s) => s.isDragging);
 
   return (
     <>
-      {/* Lighting */}
       <ambientLight intensity={0.5} />
       <directionalLight
         position={[5, 10, 5]}
@@ -75,12 +91,10 @@ function SceneContent() {
       <directionalLight position={[-3, 5, -5]} intensity={0.3} />
       <hemisphereLight groundColor="#0A0E14" color="#1a2a3a" intensity={0.4} />
 
-      {/* Ground */}
       <GroundPlane />
       <FloorGrid />
       <SceneGrid />
 
-      {/* Contact shadows for realism */}
       <ContactShadows
         position={[0, 0, 0]}
         opacity={0.4}
@@ -90,18 +104,15 @@ function SceneContent() {
         color="#000000"
       />
 
-      {/* Placed models */}
-      <group onPointerMissed={handleMiss}>
-        <Suspense fallback={<ModelLoadFallback />}>
-          {placedObjects.map((obj) => (
-            <PlacedModel key={obj.id} object={obj} />
-          ))}
-        </Suspense>
-      </group>
+      <Suspense fallback={<ModelLoadFallback />}>
+        {placedObjects.map((obj) => (
+          <PlacedModel key={obj.id} object={obj} />
+        ))}
+      </Suspense>
 
-      {/* Camera controls */}
       <OrbitControls
         makeDefault
+        enabled={!isDragging}
         maxPolarAngle={Math.PI / 2.05}
         minPolarAngle={0.2}
         minDistance={1}

@@ -1,33 +1,50 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
-import { DEFAULT_MODEL_ID } from '../data/modelCatalog.js';
+import { DEFAULT_MODEL_ID, getModelById } from '../data/modelCatalog.js';
 
 const useSceneStore = create((set, get) => ({
   placedObjects: [],
   selectedObjectId: null,
   selectedModelId: DEFAULT_MODEL_ID,
+  placeMode: true,
   showPlanes: false,
+  isDragging: false,
 
-  setSelectedModelId: (id) => set({ selectedModelId: id }),
+  setSelectedModelId: (id) =>
+    set({
+      selectedModelId: id,
+      placeMode: true,
+      selectedObjectId: null,
+    }),
+
+  setPlaceMode: (placeMode) => set({ placeMode }),
+  setDragging: (isDragging) => set({ isDragging }),
 
   placeObject: (hitPosition) => {
     const { selectedModelId } = get();
-    // Only one object at a time — replace existing if any
+    const model = getModelById(selectedModelId);
     const newObject = {
       id: uuidv4(),
       modelId: selectedModelId,
       position: [...hitPosition],
       rotation: [0, 0, 0],
       userScaleFactor: 1.0,
+      clip: model.clip || '',
+      paused: false,
     };
-    set({
-      placedObjects: [newObject],
+    set((state) => ({
+      placedObjects: [...state.placedObjects, newObject],
       selectedObjectId: newObject.id,
-    });
+      placeMode: false,
+    }));
     return newObject.id;
   },
 
-  selectObject: (id) => set({ selectedObjectId: id }),
+  selectObject: (id) =>
+    set({
+      selectedObjectId: id,
+      placeMode: !id,
+    }),
 
   updateObjectPosition: (id, pos) =>
     set((state) => ({
@@ -47,17 +64,36 @@ const useSceneStore = create((set, get) => ({
     set((state) => ({
       placedObjects: state.placedObjects.map((obj) =>
         obj.id === id
-          ? { ...obj, userScaleFactor: Math.min(4.0, Math.max(0.25, factor)) }
+          ? { ...obj, userScaleFactor: Math.min(8.0, Math.max(0.15, factor)) }
           : obj
       ),
     })),
 
-  replaceObjectModel: (id, newModelId) =>
+  setObjectClip: (id, clip) =>
     set((state) => ({
       placedObjects: state.placedObjects.map((obj) =>
-        obj.id === id ? { ...obj, modelId: newModelId } : obj
+        obj.id === id ? { ...obj, clip, paused: false } : obj
       ),
     })),
+
+  setObjectPaused: (id, paused) =>
+    set((state) => ({
+      placedObjects: state.placedObjects.map((obj) =>
+        obj.id === id ? { ...obj, paused } : obj
+      ),
+    })),
+
+  replaceObjectModel: (id, newModelId) =>
+    set((state) => {
+      const model = getModelById(newModelId);
+      return {
+        placedObjects: state.placedObjects.map((obj) =>
+          obj.id === id
+            ? { ...obj, modelId: newModelId, clip: model.clip || '', paused: false }
+            : obj
+        ),
+      };
+    }),
 
   deleteSelected: () =>
     set((state) => ({
@@ -65,9 +101,10 @@ const useSceneStore = create((set, get) => ({
         (obj) => obj.id !== state.selectedObjectId
       ),
       selectedObjectId: null,
+      placeMode: true,
     })),
 
-  clearScene: () => set({ placedObjects: [], selectedObjectId: null }),
+  clearScene: () => set({ placedObjects: [], selectedObjectId: null, placeMode: true }),
 
   toggleShowPlanes: () =>
     set((state) => ({ showPlanes: !state.showPlanes })),
@@ -77,7 +114,9 @@ const useSceneStore = create((set, get) => ({
       placedObjects: [],
       selectedObjectId: null,
       selectedModelId: DEFAULT_MODEL_ID,
+      placeMode: true,
       showPlanes: false,
+      isDragging: false,
     }),
 }));
 

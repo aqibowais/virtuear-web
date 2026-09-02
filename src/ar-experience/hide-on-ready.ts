@@ -8,7 +8,11 @@ ecs.registerComponent({
     })
 
     defineState('ready').onEnter(() => {
-      ecs.Disabled.reset(world, eid)
+      const entity = world.getEntity(eid)
+      entity.hide()
+      entity.disable()
+      const loading = document.getElementById('ar-loading')
+      if (loading) loading.remove()
     })
   },
 })

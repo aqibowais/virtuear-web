@@ -60,10 +60,15 @@ const bannerText = {
 export default function ArSessionPage() {
   const navigate = useNavigate();
   const [status, setStatus] = useState('loading');
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => isMobileDevice());
 
   useEffect(() => {
-    setIsMobile(isMobileDevice());
+    const mobile = isMobileDevice();
+    setIsMobile(mobile);
+    if (mobile) {
+      window.location.replace('/ar/index.html');
+      return;
+    }
     setStatus('ready');
   }, []);
 
@@ -71,29 +76,11 @@ export default function ArSessionPage() {
     navigate('/');
   }, [navigate]);
 
-  if (status === 'loading') {
+  if (status === 'loading' || isMobile) {
     return (
       <div style={loadingStyle}>
         <div style={spinnerStyle} />
-        <p style={labelStyle}>Initializing...</p>
-      </div>
-    );
-  }
-
-  if (isMobile) {
-    return (
-      <div style={{ width: '100%', height: '100%', position: 'relative', backgroundColor: '#07090F' }}>
-        <iframe
-          src="/ar/index.html"
-          title="Virtuar AR"
-          allow="camera; microphone; gyroscope; accelerometer; xr-spatial-tracking"
-          allowFullScreen
-          style={{
-            position: 'absolute', inset: 0,
-            width: '100%', height: '100%',
-            border: 'none', backgroundColor: '#07090F',
-          }}
-        />
+        <p style={labelStyle}>{isMobile ? 'Opening camera…' : 'Initializing...'}</p>
       </div>
     );
   }
